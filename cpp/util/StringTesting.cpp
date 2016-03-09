@@ -91,3 +91,29 @@ int FindHighestScore(std::vector<TestString> input_strings) {
 	return max_score_location;
 }
 
+int32_t CharacterHammingDistance(char first_char, char second_char) {
+	char xor_char = first_char ^ second_char;
+	int32_t hamming_distance = 0;
+	
+	while (xor_char != 0) {
+		hamming_distance += xor_char & 1;
+		xor_char = xor_char >> 1;
+	}
+	
+	return hamming_distance;
+}
+
+int32_t StringHammingDistance(std::string first_string, std::string second_string) {
+	int32_t hamming_distance = 0;
+	
+	if (first_string.length() != second_string.length()) {
+		throw std::invalid_argument("StringHammingDistance: inputs of uneven length.");
+	}
+	
+	for (uint16_t i = 0; i < first_string.length(); i++) {
+		hamming_distance += CharacterHammingDistance(first_string[i], second_string[i]);
+	}
+	
+	return hamming_distance;
+}
+
