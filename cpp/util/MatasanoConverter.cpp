@@ -170,6 +170,54 @@ std::string StringFromVectorASCII(std::vector<uint8_t> input_vector) {
 	return out;
 }
 
+uint8_t NumberFromBase64Char(char base64_character) {
+	if (65 <= base64_character && base64_character <= 90) {
+		// 0-25
+		return (uint8_t) base64_character - 65;
+	} else if (97 <= base64_character && base64_character <= 122) {
+		//26-51
+		return (uint8_t) base64_character - 71;
+	} else if (48 <= base64_character && base64_character <= 57) {
+		//52-61
+		return (uint8_t) base64_character + 4;
+	} else if (base64_character == 43) {
+		//62
+		return 62;
+	} else if (base64_character == 47) {
+		//63
+		return 63;
+	} else {
+		throw std::invalid_argument("NumberFromBase64Char: invalid base64 character");
+	}
+}
+
+#include<iostream>
+
+std::vector<uint8_t> Base64StringConvert(std::string input_string) {
+	//need to loop over each character and add two characters at a time to the uint8_t array
+	std::vector<uint8_t> output_vector;
+	int32_t max = input_string.length();
+	uint8_t a = 0, b = 0, c = 0, d = 0;
+	
+	output_vector.clear(); //may be redundant
+	
+	if (max % 4 != 0) {
+		throw std::invalid_argument("Base64StringConvert: inputString not valid base 64 - length not a multiple of 4.");
+	}
+	
+	for(int32_t i = 0; i < max; i+=4) {
+		a = NumberFromBase64Char(input_string[i    ]);
+		b = NumberFromBase64Char(input_string[i + 1]);
+		c = NumberFromBase64Char(input_string[i + 2]);
+		d = NumberFromBase64Char(input_string[i + 3]);
+		output_vector.push_back((a << 2) | ((b >> 4) & 0x3));
+		output_vector.push_back(((b & 0x0F) << 4) | ((c >> 2) & 0x0F));
+		output_vector.push_back(((c << 6) & 0xC0) | d);
+	}
+	
+	return output_vector;
+}
+
 std::string StringFromByteVector(std::vector<uint8_t> input_vector, std::string output_type) {
 	std::string temp; //needed for upper case hex output
 	if (output_type.compare("base64") == 0 || output_type.compare("b64") == 0 || output_type.compare("Base64") == 0 || output_type.compare("B64") == 0) {
@@ -183,7 +231,7 @@ std::string StringFromByteVector(std::vector<uint8_t> input_vector, std::string 
 	} else if (output_type.compare("ASCII") == 0 || output_type.compare("ascii") == 0) {
 		return StringFromVectorASCII(input_vector);
 	} else {
-		throw std::invalid_argument("GetStringOutput: unknown output_type.");
+		throw std::invalid_argument("StringFromByteVector: unknown output_type.");
 	}
 }
 
@@ -192,10 +240,12 @@ std::vector<uint8_t> ByteVectorFromString(std::string input_string, std::string 
 	//e.g. for base64 input
 	if (input_type.compare("hex") == 0 || input_type.compare("Hex") == 0 || input_type.compare("h") == 0) { 
 		return HexStringConvert(input_string);
-	} else if (input_type.compare("ASCII") == 0 || input_type.compare("ascii") == 0 || input_type.compare("Ascii")) {
+	} else if (input_type.compare("ASCII") == 0 || input_type.compare("ascii") == 0 || input_type.compare("Ascii") == 0) {
 		return ASCIIStringConvert(input_string);
+	} else if (input_type.compare("b64") == 0 || input_type.compare("base64") == 0 || input_type.compare("B64") == 0 || input_type.compare("Base64") == 0) {
+		return Base64StringConvert(input_string);
 	} else {
-		throw std::invalid_argument("inputString: unknown inputType.");
+		throw std::invalid_argument("ByteVectorFromString: unknown inputType.");
 	}
 }
 
