@@ -191,8 +191,6 @@ uint8_t NumberFromBase64Char(char base64_character) {
 	}
 }
 
-#include<iostream>
-
 std::vector<uint8_t> Base64StringConvert(std::string input_string) {
 	//need to loop over each character and add two characters at a time to the uint8_t array
 	std::vector<uint8_t> output_vector;
